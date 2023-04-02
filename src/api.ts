@@ -50,7 +50,7 @@ export class OpenaiApi implements IOpenaiApi {
     // TODO
     // Maybe create specific param types,
     // allowing funcs to have richer signatures
-    getTranscription(file: Blob, model: string): Promise<string> {
+    async getTranscription(file: Blob, model: string): Promise<string> {
         const formData = new FormData();
         formData.append("model", model);
         formData.append("file", file, "file.mp4");
@@ -63,10 +63,29 @@ export class OpenaiApi implements IOpenaiApi {
             body: formData,
         };
 
-        return this.request("audio/transcriptions", payload);
+        let resp = await this.request<{ text: string}>("audio/transcriptions", payload);
+        return resp.text;        
     }
 
-    getChatCompletion(text: string, prompt: { role: string; content: string; }[], model: string): Promise<string> {
-        throw new Error("Method not implemented.");
+    async getChatCompletion(text: string, prompt: { role: string; content: string; }[], model: string): Promise<string> {
+        const body = {
+            model: model,
+            messages: [
+                { role: "user", content: text }
+            ],
+            temperature: 0.8
+        };
+
+        const headers = this.buildHeadersWithAuth();
+        headers.set("Content-Type", "application/json");
+
+        const payload: RequestInit = {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify(body),
+        }
+
+        let resp = await this.request<{ choices: [{ message: { content: string } }] }>("chat/completions", payload);
+        return resp.choices[0].message.content;
     }
 }

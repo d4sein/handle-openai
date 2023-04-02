@@ -20,12 +20,22 @@ export class HandleOpenai implements IHandleOpenai {
 
     async SendMessageWithFilepath(filepath: string): Promise<string> {
         let buffer = fs.readFileSync(filepath);
-        return this.SendMessageWithBuffer(buffer);
+        let transcript = await this.SendMessageWithBuffer(buffer);
+
+        let resp;
+        try {
+            resp =  await this.api.getChatCompletion(transcript, [], "gpt-3.5-turbo");
+        } catch (error: unknown) {
+            // ...
+            throw error;
+        }
+
+        return resp;
     }
 
     async SendMessageWithBuffer(buffer: Buffer): Promise<string> {
         let file = new Blob([buffer]);
-        return this.SendMessageWithFile(file);
+        return await this.SendMessageWithFile(file);
     }
 
     async SendMessageWithFile(file: Blob): Promise<string> {
