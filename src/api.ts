@@ -1,11 +1,9 @@
-export interface IOpenaiApi {
+export interface IOpenAiApi {
     getTranscription(file: Blob, model: string): Promise<string>;
-    // TODO
-    // Type prompt
-    getChatCompletion(text: string, prompt: { role: string, content: string }[], model: string): Promise<string>;
+    getChatCompletion(text: string, model: string): Promise<string>;
 }
 
-export class OpenaiApi implements IOpenaiApi {
+export class OpenAiApi implements IOpenAiApi {
     /**
      *
      */
@@ -32,24 +30,20 @@ export class OpenaiApi implements IOpenaiApi {
         try {
             resp = await fetch(`${this.baseUrl}/${url}`, payload);
         } catch (error: unknown) {
-            // ...
+            // Do something here?
             throw error;
         }
 
         if (!resp.ok)
         {
-            console.error(await resp.json());
             // TODO
             // Improve error handling
-            throw new Error("Failed to make request.");
+            throw new Error(`Failed to make a request: \n${await resp.json()}`);
         }
 
         return await resp.json();
     }
 
-    // TODO
-    // Maybe create specific param types,
-    // allowing funcs to have richer signatures
     async getTranscription(file: Blob, model: string): Promise<string> {
         const formData = new FormData();
         formData.append("model", model);
@@ -63,11 +57,13 @@ export class OpenaiApi implements IOpenaiApi {
             body: formData,
         };
 
-        let resp = await this.request<{ text: string}>("audio/transcriptions", payload);
-        return resp.text;        
+        // TODO
+        // Type `audio transcription` response
+        let resp = await this.request<{ text: string }>("audio/transcriptions", payload);
+        return resp.text;
     }
 
-    async getChatCompletion(text: string, prompt: { role: string; content: string; }[], model: string): Promise<string> {
+    async getChatCompletion(text: string, model: string): Promise<string> {
         const body = {
             model: model,
             messages: [
@@ -85,6 +81,8 @@ export class OpenaiApi implements IOpenaiApi {
             body: JSON.stringify(body),
         }
 
+        // TODO
+        // Type `chat completion` response
         let resp = await this.request<{ choices: [{ message: { content: string } }] }>("chat/completions", payload);
         return resp.choices[0].message.content;
     }

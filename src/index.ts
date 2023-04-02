@@ -1,30 +1,31 @@
 import * as fs from "fs";
-import { IOpenaiApi, OpenaiApi } from "./api";
+import { IOpenAiApi, OpenAiApi } from "./api";
 
-export interface IHandleOpenai {
+export interface IHandleOpenAi {
     SendMessageWithFilepath(filepath: string): Promise<string>;
     SendMessageWithBuffer(buffer: Buffer): Promise<string>;
     SendMessageWithFile(file: Blob): Promise<string>;
 }
 
-export class HandleOpenai implements IHandleOpenai {
+export class HandleOpenAi implements IHandleOpenAi {
     /**
      *
      */
     constructor(apiKey: string, organization: string) {
-        this.api = new OpenaiApi(apiKey, organization, this.baseUrl);
+        this.api = new OpenAiApi(apiKey, organization, this.baseUrl);
     }
 
-    private readonly api: IOpenaiApi;
+    private readonly api: IOpenAiApi;
     private readonly baseUrl: string = "https://api.openai.com/v1";
 
     async SendMessageWithFilepath(filepath: string): Promise<string> {
-        let buffer = fs.readFileSync(filepath);
-        let transcript = await this.SendMessageWithBuffer(buffer);
+        let resp: string;
 
-        let resp;
         try {
-            resp =  await this.api.getChatCompletion(transcript, [], "gpt-3.5-turbo");
+            let buffer = fs.readFileSync(filepath);
+            let transcript = await this.SendMessageWithBuffer(buffer);
+
+            resp =  await this.api.getChatCompletion(transcript, "gpt-3.5-turbo");
         } catch (error: unknown) {
             // ...
             throw error;
@@ -39,15 +40,6 @@ export class HandleOpenai implements IHandleOpenai {
     }
 
     async SendMessageWithFile(file: Blob): Promise<string> {
-        let resp;
-
-        try {
-            resp = await this.api.getTranscription(file, "whisper-1");
-        } catch (error: unknown) {
-             // ...
-             throw error;
-        }
-
-        return resp;   
+        return await this.api.getTranscription(file, "whisper-1");
     }
 }
