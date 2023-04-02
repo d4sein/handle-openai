@@ -1,0 +1,23 @@
+{
+  "name": "handle-openai",
+  "author": "Willian Nascimento (dasein)",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "dev": "nodemon --exec npx ts-node src/sample.ts"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.15.11",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.3"
+  }
+}
