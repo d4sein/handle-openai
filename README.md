@@ -1,2 +1,2 @@
-yarn install -D
-yarn dev
+- yarn install -D
+- yarn dev
