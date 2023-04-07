@@ -19,27 +19,43 @@ export class HandleOpenAi implements IHandleOpenAi {
     private readonly baseUrl: string = "https://api.openai.com/v1";
 
     async SendMessageWithFilepath(filepath: string): Promise<string> {
+        let buffer: Buffer;
+
+        try {
+            buffer = fs.readFileSync(filepath);
+        } catch (error: unknown) {
+            // ...
+            throw error;
+        }
+        
+        return await this.SendMessageWithBuffer(buffer);
+    }
+
+    async SendMessageWithBuffer(buffer: Buffer): Promise<string> {
+        let file: Blob;
+
+        try {
+            file = new Blob([buffer]);
+        } catch (error: unknown)
+        {
+            // ...
+            throw error;
+        }
+
+        return await this.SendMessageWithFile(file);
+    }
+
+    async SendMessageWithFile(file: Blob): Promise<string> {
         let resp: string;
 
         try {
-            let buffer = fs.readFileSync(filepath);
-            let transcript = await this.SendMessageWithBuffer(buffer);
-
-            resp =  await this.api.getChatCompletion(transcript, "gpt-3.5-turbo");
+            let transcript = await this.api.getTranscription(file, "whisper-1");
+            resp = await this.api.getChatCompletion(transcript, "gpt-3.5-turbo");
         } catch (error: unknown) {
             // ...
             throw error;
         }
 
         return resp;
-    }
-
-    async SendMessageWithBuffer(buffer: Buffer): Promise<string> {
-        let file = new Blob([buffer]);
-        return await this.SendMessageWithFile(file);
-    }
-
-    async SendMessageWithFile(file: Blob): Promise<string> {
-        return await this.api.getTranscription(file, "whisper-1");
     }
 }
